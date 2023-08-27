@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import json
 import tempfile
-from pathlib import Path
+import logging
 
 from airflow import DAG
 from airflow.providers.http.operators.http import SimpleHttpOperator
@@ -84,9 +84,8 @@ def transform_response(**kwargs):
         obs = obs.astype({'series': 'float32', 'ref_area': 'string', 'frequency': 'string', 'subject': 'string', 'measure': 'string', 'unit_measure': 'string'})
         obs['time']= pd.to_datetime(obs['time'], format='%Y')
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = os.path.join(tmp_dir, "obs.csv")
-            obs.to_csv("obs.csv",header=None, index=False)
+        tmp_path = os.path.join("obs.csv")
+        obs.to_csv(tmp_path ,header=None, index=False)
 
         ti.xcom_push(key="store_path", value=tmp_path)
 
@@ -98,20 +97,17 @@ def read_store(**kwargs):
     ti = kwargs["ti"]
     path = ti.xcom_pull(key="store_path", task_ids='transform_response_to_df')
     pg_hook = PostgresHook(postgres_conn_id="postgres_default")
-    store = pg_hook.bulk_load("green_table", path)
-    
-    return store
-
+    conn = pg_hook.get_conn()
+    curr = conn.cursor()
+    # CSV loading to table.
+    logging.info("Loading values to oecd_table")
+    with open(path, 'r') as f:
+        curr.copy_from(f, 'oecd_table', sep=',')
+        conn.commit()
+       
 
 transform_task = PythonOperator(
    task_id="transform_response_to_df",
-   provide_context=True,
-   python_callable=transform_response,
-   dag=dag,
-)
-
-read_store_task = PythonOperator(
-   task_id="read_store",
    provide_context=True,
    python_callable=transform_response,
    dag=dag,
@@ -121,7 +117,7 @@ create_table = PostgresOperator(
         task_id="create_oecd_table",
         postgres_conn_id="postgres_default",
         sql="""
-            CREATE TABLE IF NOT EXISTS green_table (
+            CREATE TABLE IF NOT EXISTS oecd_table (
             series NUMERIC NOT NULL,
             ref_area VARCHAR NOT NULL,
             frequency VARCHAR NOT NULL,
@@ -132,6 +128,16 @@ create_table = PostgresOperator(
             );
           """,
     )
+
+
+read_store_task = PythonOperator(
+   task_id="read_store",
+   provide_context=True,
+   python_callable=read_store,
+   dag=dag,
+)
+
+
 
 # populate_table = PostgresOperator(
 #         task_id="populate_table",
