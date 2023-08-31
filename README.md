@@ -2,4 +2,4 @@
 Data pipeline for retrieving economic and financial data to inform development decision
 
 
-![Airflow UI of task flow](https://raw.githubusercontent.com/okirialbert/infra-data/image/dag_screen.png)
+![Airflow UI of task flow](https://raw.githubusercontent.com/okirialbert/infra-data/main/image/dag_screen.png?token=GHSAT0AAAAAACF3476EKIE6GBO4NTWORWDGZHQSUSQ)
