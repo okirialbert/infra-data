@@ -45,16 +45,6 @@ task_get_data_oecd = SimpleHttpOperator(
     dag=dag,
 )
 
-task_get_data_structure_oecd = SimpleHttpOperator(
-    task_id="get_data_structure_oecd",
-    method="GET",
-    http_conn_id="oecd_conn_structure_id",
-    endpoint="OECD.ENV.EPI/DSD_GG@DF_ECO_OP/1.0?references=all",
-    headers={"Accept": "application/vnd.sdmx.structure+json;charset=utf-8;version=1.0"},
-    log_response= True,
-    dag=dag,
-)
-
 
 def transform_response(**kwargs):
     ti = kwargs["ti"]
@@ -79,44 +69,6 @@ def transform_response(**kwargs):
     ti.xcom_push(key="store_path", value=tmp_path)
 
 
-def transform_structure_store(**kwargs):
-    ti = kwargs["ti"]
-    response = ti.xcom_pull(task_ids='get_data_structure_oecd')
-
-    responseJson = json.loads(response)
-    codelistsJson = responseJson.get('data').get('codelists')
-
-    idList = [id['id'] for item in codelistsJson for id in item['codes']]
-    nameList = [id['name'] for item in codelistsJson for id in item['codes']]
-
-    catIdList = [item['id'] for item in codelistsJson for id in item['codes']]
-    catNameList = [item['name'] for item in codelistsJson for id in item['codes']]
-
-    pg_hook = PostgresHook(postgres_conn_id="postgres_default")
-    conn = pg_hook.get_conn()
-    curr = conn.cursor()
-    
-    tempdf = pd.DataFrame(idList)
-    tempdf.rename(columns = {0: 'id'}, inplace = True)
-    tempdf['name'] = nameList
-    tempdf['category_id'] = catIdList
-    tempdf['category_name'] = catNameList
-        
-    columns = ['id', 'name', 'category_id', 'category_name']
-        
-    tempdf = tempdf[columns].astype("string")
-
-    incList = tempdf.values.tolist()
-
-    args = ','.join(curr.mogrify("(%s,%s,%s,%s)", i).decode('utf-8')
-                for i in incList)
-        
-    curr.execute("INSERT INTO oecd_struct_meta VALUES " + (args))
-    conn.commit()
-
-
-    
-
 def read_store(**kwargs):
 
     pg_hook = PostgresHook(postgres_conn_id="postgres_default")
@@ -128,35 +80,16 @@ def read_store(**kwargs):
 
     # CSV loading to table.
     with open(csv_path, 'r') as a:
-        curr.copy_from(a, 'df_eco_op', sep=',', null="")
+        curr.copy_from(a, 'gg_eco_op', sep=',', null="", columns=('structure', 'structure_id', 'action', 'ref', 'freq', 'measure',
+       'unit_measure', 'activity', 'time_period', 'obs_value', 'obs_status',
+       'obs_status_2', 'unit_mult', 'price_base', 'base_per', 'timeliness'))
         conn.commit()
-
-# def read_store_struct(**kwargs):
-
-#     pg_hook = PostgresHook(postgres_conn_id="postgres_default")
-#     conn = pg_hook.get_conn()
-#     curr = conn.cursor()
-
-#     ti = kwargs["ti"]
-#     struct_csv_path = os.path.join('struct.csv')
-
-#     # CSV loading to table.
-#     with open(struct_csv_path, 'r') as b:
-#         curr.copy_from(b, 'oecd_struct_meta', sep=',', null="")
-#         conn.commit()
 
 
 transform_response_task = PythonOperator(
    task_id="transform_response",
    provide_context=True,
    python_callable=transform_response,
-   dag=dag,
-)
-
-transform_structure_task = PythonOperator(
-   task_id="transform_structure",
-   provide_context=True,
-   python_callable=transform_structure_store,
    dag=dag,
 )
 
@@ -167,18 +100,13 @@ read_store_task = PythonOperator(
    dag=dag,
 )
 
-# read_store_struct_task = PythonOperator(
-#    task_id="read_store_struct",
-#    provide_context=True,
-#    python_callable=read_store_struct,
-#    dag=dag,
-# )
 
 create_table = PostgresOperator(
         task_id="create_oecd_table",
         postgres_conn_id="postgres_default",
         sql="""
-            CREATE TABLE IF NOT EXISTS df_eco_op (
+            CREATE TABLE IF NOT EXISTS gg_eco_op (
+            obs_id SERIAL PRIMARY KEY,
             structure VARCHAR,
             structure_id VARCHAR,
             action VARCHAR,
@@ -198,24 +126,10 @@ create_table = PostgresOperator(
             );
             """)
 
-create_meta_table = PostgresOperator(
-        task_id="create_oecd_struct_table",
-        postgres_conn_id="postgres_default",
-        sql="""
-            CREATE TABLE IF NOT EXISTS oecd_struct_meta (
-            id VARCHAR,
-            name VARCHAR,
-            category_id VARCHAR,
-            category_name VARCHAR
-            );
-            """)
 
 signal_task = BashOperator(
     task_id="signal_op",
     bash_command='echo "Signal Complete";'
 )
 
-task_get_data_oecd >> transform_response_task >> create_table >> read_store_task
-task_get_data_structure_oecd >> create_meta_table >> transform_structure_task
-
-[transform_structure_task, read_store_task] >> signal_task
+task_get_data_oecd >> transform_response_task >> create_table >> read_store_task >> signal_task
