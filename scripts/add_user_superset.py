@@ -2,6 +2,9 @@ import requests
 import json
 
 
+## ADD 'FAB_ADD_SECURITY_API = True' to config.py
+## Execute 'superset init' command
+
 payload = {
   "password": "admin",
   "provider": "db",
