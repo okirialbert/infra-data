@@ -35,7 +35,7 @@ figure {
 body {
   font: 400 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   color: #111;
-  background-color: #fdfdfd;
+  background-color: #ffffff;
   -webkit-text-size-adjust: 100%;
   -webkit-font-feature-settings: "kern" 1;
   -moz-font-feature-settings: "kern" 1;
@@ -193,13 +193,13 @@ pre>code {
   max-width: -webkit-calc(800px - (30px * 2));
   max-width: calc(1000px - 30px * 2);
   margin-right: auto;
-  margin-left: auto;
+  margin-left: 140px;
   padding-right: 30px;
   padding-left: 30px;
 }
 
 .content-wrapper {
-  padding: 64px calc(50% - 585px) 96px 96px;
+  padding: 64px calc(50% - 585px) 40px 96px;
 
 }
 
@@ -211,11 +211,20 @@ pre>code {
   margin-left: auto;
 }
 
+.nav-get-access {
+  margin-right: 10px;
+}
+
+.input-text {
+  padding-bottom: 30px;
+}
+
 
 @media screen and (max-width: 800px) {
   .wrapper {
     max-width: -webkit-calc(800px - (30px));
     max-width: calc(800px - (30px));
+    margin-left: 15px;
     padding-right: 15px;
     padding-left: 15px;
   }
@@ -223,6 +232,10 @@ pre>code {
   .content-wrapper {
     padding: 15px;
 
+  }
+
+  .nav-get-access {
+    display: none;
   }
 }
 
@@ -471,10 +484,21 @@ table td {
   line-height: 72px;
 }
 
+.pricing-header {
+  max-width: 50vw;
+}
+
 .vr-description {
   font-size: 20px;
   font-weight: 400;
   line-height: 24px;
+}
+
+.vr-about-description {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 30px;
+  max-width: 60vw;
 }
 
 .vr-section-heading {
@@ -483,12 +507,24 @@ table td {
   line-height: 48px;
 }
 
+.pricing-tier-header {
+  font-size: 37px;
+  font-weight: 800;
+  line-height: 20px;
+  color: #005f5f;
+  ;
+}
+
 
 .home {
   flex: 0 0 460px;
   margin-right: 40px;
   margin-left: 64px;
 
+}
+
+.plain-text {
+  max-width: 70wv;
 }
 
 .header-section {
@@ -538,6 +574,10 @@ table td {
   line-height: 1;
 }
 
+.utility-section-heading {
+  font-weight: 700;
+}
+
 @media screen and (max-width: 800px) {
   .post-title {
     font-size: 36px;
@@ -546,19 +586,127 @@ table td {
   .home {
     margin-left: 15px;
     margin-right: 15px;
-    max-width: 80vw;
+    max-width: 100vw;
     letter-spacing: -1.2px;
     line-height: 48px;
   }
+
   .header-section {
     max-width: 100vw;
-  
+
   }
 
   .section-icon {
     display: none;
   }
 
+  .plain-text {
+    max-width: 100vw;
+  }
+
+  .vr-about-description {
+    max-width: 100vw;
+  }
+
+  .vr-heading {
+    font-size: 55px;
+    font-weight: 600;
+    letter-spacing: -2.1px;
+    line-height: 52px;
+  }
+
+  .pricing-header {
+    max-width: 100vw;
+  }
+
+}
+
+.box-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.price-section {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 0 460px;
+  margin-right: 40px;
+  margin-left: 64px;
+  margin-top: 40px;
+}
+
+.price-section>* {
+  flex: 1;
+}
+
+.pricing-card {
+  height: 350px;
+  width: 350px;
+  margin-right: 35px;
+}
+
+.pricing-card-heading {
+  margin-top: 25px;
+  margin-left: 15px;
+}
+
+.pricing-content {
+  padding: 30px;
+  padding-bottom: 0px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-gap: 10px;
+}
+
+.card {
+  display: grid;
+  grid-template-rows: max-content 300px 1fr;
+  width: 300px;
+  height: 400px;
+}
+
+.card-elevation {
+  --elevation: 0;
+  --epx: calc(var(--elevation) * 1px);
+
+  /* these 2 shadows serve as a border for  0-1 elevation    */
+  --shadow1: 0 0 1px rgba(0, 0, 0, .1);
+  --shadow2: 0 1px 2px rgba(0, 0, 0, .08);
+
+  --offset-y: calc(var(--epx) + 1px);
+  --blur: calc(var(--epx) * 2);
+  --spread: calc(var(--epx) * .3);
+  --shadow3:
+    0 var(--offset-y) var(--blur) var(--spread) rgba(0, 0, 0, 0.2);
+
+  box-shadow:
+    var(--shadow1),
+    var(--shadow2),
+    var(--shadow3);
+
+}
+
+.card img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+
+.box-section>* {
+  flex: 1;
+}
+
+
+.utility-section {
+  min-width: 200px;
+}
+
+.feedback {
+  max-width: 300px;
 }
 
 .post-content {
@@ -573,10 +721,34 @@ table td {
   .post-content h2 {
     font-size: 28px;
   }
+
+  .price-section {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 0 0 460px;
+    margin-right: 0px;
+    margin-left: 0px;
+    margin-top: 30px;
+  }
+
+  .card {
+    min-width: 80vw;
+  }
+  th {
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+    white-space: nowrap;
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+  }
 }
 
 .post-content h3 {
   font-size: 26px;
+}
+
+.utility-section {
+  margin-top: 40px;
 }
 
 @media screen and (max-width: 800px) {
