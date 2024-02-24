@@ -3,7 +3,7 @@ Data pipeline for retrieving economic and financial data to inform development d
 
 ## Airflow UI
 
-![Airflow UI of task flow](https://raw.githubusercontent.com/okirialbert/infra-data/main/image/dag_screen.png)
+![Airflow UI of task flow](https://github.com/okirialbert/infra-data/blob/main/image%2Fdag_screen.png)
 
 ## DB
 
