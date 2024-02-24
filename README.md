@@ -3,7 +3,7 @@ Data pipeline for retrieving economic and financial data to inform development d
 
 ## Airflow UI
 
-![Airflow UI of task flow](https://raw.githubusercontent.com/devlp121/redmodel-pipeline/master/test1.png)
+![Airflow UI of task flow](https://raw.githubusercontent.com/devlp121/infra-data/master/dag_screen.png)
 
 ## DB
 
